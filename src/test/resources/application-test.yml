@@ -1,0 +1,21 @@
+# Test configuration for the Cohort Management Service
+spring:
+  profiles: test
+  
+# Disable AWS services for testing
+aws:
+  enabled: false
+  endpoint: http://localhost:4566
+  region: us-east-1
+  dynamodb:
+    customer-table: customer-table-test
+    cohort-table: cohort-table-test
+  sqs:
+    queue-name: customer-data-queue-test
+
+# Logging configuration
+logging:
+  level:
+    root: INFO
+    com.cohortmgmt: DEBUG
+    org.springframework: INFO

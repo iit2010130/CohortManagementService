@@ -1,0 +1,24 @@
+# Spring Boot Configuration
+server:
+  port: 8080
+
+spring:
+  application:
+    name: cohort-management-service
+
+# AWS Configuration for LocalStack
+aws:
+  region: us-east-1
+  endpoint: http://localhost:4566
+  dynamodb:
+    customer-table: Customers
+    cohort-table: Cohorts
+  sqs:
+    queue-name: customer-data-queue
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.cohortmgmt: DEBUG
+    org.springframework: INFO
