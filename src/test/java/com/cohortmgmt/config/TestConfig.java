@@ -1,6 +1,5 @@
 package com.cohortmgmt.config;
 
-import com.cohortmgmt.model.Cohort;
 import com.cohortmgmt.model.CohortType;
 import com.cohortmgmt.model.Customer;
 import com.cohortmgmt.repository.CohortRepository;
@@ -57,22 +56,19 @@ public class TestConfig {
             return customer;
         }
         
-        @Override
+        // Additional methods for testing purposes
         public Optional<Customer> findById(String customerId) {
             return Optional.ofNullable(customers.get(customerId));
         }
         
-        @Override
         public List<Customer> findAll() {
             return new ArrayList<>(customers.values());
         }
         
-        @Override
         public void deleteById(String customerId) {
             customers.remove(customerId);
         }
         
-        @Override
         public boolean existsById(String customerId) {
             return customers.containsKey(customerId);
         }
@@ -83,71 +79,35 @@ public class TestConfig {
      */
     private static class MockCohortRepository implements CohortRepository {
         
-        private final Map<String, Cohort> cohorts = new ConcurrentHashMap<>();
+        private final Map<CohortType, Set<String>> cohortTypeToCustomerIds = new ConcurrentHashMap<>();
+        private final Map<String, Set<CohortType>> customerIdToCohortTypes = new ConcurrentHashMap<>();
         
         @Override
-        public Cohort save(Cohort cohort) {
-            cohorts.put(cohort.getId(), cohort);
-            return cohort;
-        }
-        
-        @Override
-        public Optional<Cohort> findById(String cohortId) {
-            return Optional.ofNullable(cohorts.get(cohortId));
-        }
-        
-        @Override
-        public List<Cohort> findAll() {
-            return new ArrayList<>(cohorts.values());
-        }
-        
-        @Override
-        public List<Cohort> findByType(CohortType cohortType) {
-            return cohorts.values().stream()
-                    .filter(cohort -> cohort.getType() == cohortType)
-                    .collect(Collectors.toList());
-        }
-        
-        @Override
-        public boolean addCustomerToCohort(String cohortId, String customerId) {
-            Cohort cohort = cohorts.get(cohortId);
-            if (cohort == null) {
-                return false;
-            }
-            cohort.addCustomer(customerId);
+        public boolean addCustomerToCohortType(CohortType cohortType, String customerId) {
+            // Add to cohortTypeToCustomerIds
+            cohortTypeToCustomerIds.computeIfAbsent(cohortType, k -> new HashSet<>()).add(customerId);
+            
+            // Add to customerIdToCohortTypes
+            customerIdToCohortTypes.computeIfAbsent(customerId, k -> new HashSet<>()).add(cohortType);
+            
             return true;
         }
         
         @Override
-        public boolean removeCustomerFromCohort(String cohortId, String customerId) {
-            Cohort cohort = cohorts.get(cohortId);
-            if (cohort == null) {
-                return false;
-            }
-            return cohort.removeCustomer(customerId);
+        public Set<String> getCustomerIdsByCohortType(CohortType cohortType) {
+            return cohortTypeToCustomerIds.getOrDefault(cohortType, Collections.emptySet());
         }
         
         @Override
-        public Set<String> getCustomerIds(String cohortId) {
-            Cohort cohort = cohorts.get(cohortId);
-            return cohort != null ? cohort.getCustomerIds() : Collections.emptySet();
+        public List<CohortType> findCohortTypesByCustomerId(String customerId) {
+            Set<CohortType> cohortTypes = customerIdToCohortTypes.getOrDefault(customerId, Collections.emptySet());
+            return new ArrayList<>(cohortTypes);
         }
         
         @Override
-        public List<Cohort> findByCustomerId(String customerId) {
-            return cohorts.values().stream()
-                    .filter(cohort -> cohort.getCustomerIds().contains(customerId))
-                    .collect(Collectors.toList());
-        }
-        
-        @Override
-        public void deleteById(String cohortId) {
-            cohorts.remove(cohortId);
-        }
-        
-        @Override
-        public boolean existsById(String cohortId) {
-            return cohorts.containsKey(cohortId);
+        public boolean isCustomerInCohortType(String customerId, CohortType cohortType) {
+            Set<CohortType> cohortTypes = customerIdToCohortTypes.getOrDefault(customerId, Collections.emptySet());
+            return cohortTypes.contains(cohortType);
         }
     }
 }

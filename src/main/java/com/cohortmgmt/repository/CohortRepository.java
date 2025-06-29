@@ -1,66 +1,50 @@
 package com.cohortmgmt.repository;
 
-import com.cohortmgmt.model.Cohort;
+import com.cohortmgmt.model.CohortType;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 /**
  * Repository interface for storing and retrieving cohort data.
  * Minimized to support only the required operations:
- * 1. Determine if a given CustomerId is part of a specific cohort
- * 2. List all cohorts associated with a given CustomerId
- * 3. Retrieve all CustomerIds for a specific cohort
+ * 1. Determine if a given CustomerId is part of a specific cohort type
+ * 2. List all cohort types associated with a given CustomerId
+ * 3. Retrieve all CustomerIds for a specific cohort type
  */
 public interface CohortRepository {
     
     /**
-     * Saves a cohort to the repository (needed for initialization).
+     * Adds a customer to a cohort type (needed for classification).
      *
-     * @param cohort The cohort to save
-     * @return The saved cohort
-     */
-    Cohort save(Cohort cohort);
-    
-    /**
-     * Finds a cohort by ID (needed for operations).
-     *
-     * @param cohortId The ID of the cohort to find
-     * @return An Optional containing the cohort if found, or empty if not found
-     */
-    Optional<Cohort> findById(String cohortId);
-    
-    /**
-     * Adds a customer to a cohort (needed for classification).
-     *
-     * @param cohortId The ID of the cohort
+     * @param cohortType The type of the cohort
      * @param customerId The ID of the customer to add
      * @return true if the customer was added, false otherwise
      */
-    boolean addCustomerToCohort(String cohortId, String customerId);
+    boolean addCustomerToCohortType(CohortType cohortType, String customerId);
     
     /**
-     * Gets all customer IDs in a cohort (for query #3).
+     * Gets all customer IDs in a cohort type (for query #3).
      *
-     * @param cohortId The ID of the cohort
-     * @return The set of customer IDs in the cohort
+     * @param cohortType The type of the cohort
+     * @return The set of customer IDs in the cohort type
      */
-    Set<String> getCustomerIds(String cohortId);
+    Set<String> getCustomerIdsByCohortType(CohortType cohortType);
     
     /**
-     * Gets all cohorts that contain a specific customer (for query #2).
+     * Gets all cohort types that contain a specific customer (for query #2).
      *
      * @param customerId The ID of the customer
-     * @return The list of cohorts containing the customer
+     * @return The list of cohort types containing the customer
      */
-    List<Cohort> findByCustomerId(String customerId);
+    List<CohortType> findCohortTypesByCustomerId(String customerId);
     
     /**
-     * Checks if a cohort exists in the repository (needed for initialization).
+     * Checks if a customer is in a specific cohort type.
      *
-     * @param cohortId The ID of the cohort to check
-     * @return true if the cohort exists, false otherwise
+     * @param customerId The ID of the customer
+     * @param cohortType The type of cohort
+     * @return true if the customer is in the cohort type, false otherwise
      */
-    boolean existsById(String cohortId);
+    boolean isCustomerInCohortType(String customerId, CohortType cohortType);
 }

@@ -7,6 +7,7 @@ import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.Record;
 import com.amazonaws.services.dynamodbv2.model.StreamRecord;
+import com.cohortmgmt.model.CohortType;
 import com.cohortmgmt.model.Customer;
 import com.cohortmgmt.model.UserType;
 import org.slf4j.Logger;
@@ -94,10 +95,10 @@ public class DynamoDBStreamProcessingService {
             // Create a customer object
             Customer customer = new Customer(customerId, dailySpend, userType);
             
-            // Classify the customer into cohorts
-            Set<String> cohortIds = cohortService.classifyCustomer(customer);
+            // Classify the customer into cohort types
+            Set<CohortType> cohortTypes = cohortService.classifyCustomer(customer);
             
-            logger.info("Classified customer {} into cohorts: {}", customerId, cohortIds);
+            logger.info("Classified customer {} into cohort types: {}", customerId, cohortTypes);
         } catch (Exception e) {
             logger.error("Error processing INSERT or MODIFY event: {}", e.getMessage(), e);
         }

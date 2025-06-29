@@ -1,4 +1,5 @@
 /Volumes/workspace/CohortManagementService/CohortManagementService/src/main/java/com/cohortmgmt/controller/CohortController.java
+/Volumes/workspace/CohortManagementService/CohortManagementService/src/main/java/com/cohortmgmt/service/rule/MidSpendRule.java
 /Volumes/workspace/CohortManagementService/CohortManagementService/src/main/java/com/cohortmgmt/service/rule/DailySpendRule.java
 /Volumes/workspace/CohortManagementService/CohortManagementService/src/main/java/com/cohortmgmt/repository/CustomerRepository.java
 /Volumes/workspace/CohortManagementService/CohortManagementService/src/main/java/com/cohortmgmt/config/DataInitializer.java
@@ -8,7 +9,7 @@
 /Volumes/workspace/CohortManagementService/CohortManagementService/src/main/java/com/cohortmgmt/repository/DynamoDBCustomerRepository.java
 /Volumes/workspace/CohortManagementService/CohortManagementService/src/main/java/com/cohortmgmt/repository/CohortRepository.java
 /Volumes/workspace/CohortManagementService/CohortManagementService/src/main/java/com/cohortmgmt/config/AwsConfig.java
-/Volumes/workspace/CohortManagementService/CohortManagementService/src/main/java/com/cohortmgmt/model/Cohort.java
+/Volumes/workspace/CohortManagementService/CohortManagementService/src/main/java/com/cohortmgmt/config/AwsResourceInitializer.java
 /Volumes/workspace/CohortManagementService/CohortManagementService/src/main/java/com/cohortmgmt/service/CohortService.java
 /Volumes/workspace/CohortManagementService/CohortManagementService/src/main/java/com/cohortmgmt/repository/DynamoDBCohortRepository.java
 /Volumes/workspace/CohortManagementService/CohortManagementService/src/main/java/com/cohortmgmt/exception/GlobalExceptionHandler.java

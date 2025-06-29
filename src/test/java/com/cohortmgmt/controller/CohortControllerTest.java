@@ -1,6 +1,5 @@
 package com.cohortmgmt.controller;
 
-import com.cohortmgmt.model.Cohort;
 import com.cohortmgmt.model.CohortType;
 import com.cohortmgmt.service.CohortService;
 import org.junit.jupiter.api.BeforeEach;
@@ -67,35 +66,35 @@ public class CohortControllerTest {
     }
     
     @Test
-    public void testGetCustomerCohorts() {
+    public void testGetCustomerCohortTypes() {
         // Arrange
         String customerId = "123";
-        List<Cohort> cohorts = Arrays.asList(
-                new Cohort("DailySpend_PREMIUM", CohortType.PREMIUM, "Premium customers"),
-                new Cohort("UserType_PAID", CohortType.NORMAL, "Paid customers")
+        List<CohortType> cohortTypes = Arrays.asList(
+                CohortType.PREMIUM,
+                CohortType.NORMAL
         );
-        when(cohortService.getCustomerCohorts(customerId)).thenReturn(cohorts);
+        when(cohortService.getCustomerCohortTypes(customerId)).thenReturn(cohortTypes);
         
         // Act
-        ResponseEntity<List<Cohort>> response = cohortController.getCustomerCohorts(customerId);
+        ResponseEntity<List<CohortType>> response = cohortController.getCustomerCohortTypes(customerId);
         
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(2, response.getBody().size());
-        assertEquals("DailySpend_PREMIUM", response.getBody().get(0).getId());
-        assertEquals("UserType_PAID", response.getBody().get(1).getId());
+        assertEquals(CohortType.PREMIUM, response.getBody().get(0));
+        assertEquals(CohortType.NORMAL, response.getBody().get(1));
     }
     
     @Test
-    public void testGetCustomerCohorts_Empty() {
+    public void testGetCustomerCohortTypes_Empty() {
         // Arrange
         String customerId = "123";
-        List<Cohort> cohorts = Arrays.asList();
-        when(cohortService.getCustomerCohorts(customerId)).thenReturn(cohorts);
+        List<CohortType> cohortTypes = Arrays.asList();
+        when(cohortService.getCustomerCohortTypes(customerId)).thenReturn(cohortTypes);
         
         // Act
-        ResponseEntity<List<Cohort>> response = cohortController.getCustomerCohorts(customerId);
+        ResponseEntity<List<CohortType>> response = cohortController.getCustomerCohortTypes(customerId);
         
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -104,14 +103,14 @@ public class CohortControllerTest {
     }
     
     @Test
-    public void testGetCohortCustomerIdsByType() {
+    public void testGetCustomerIdsByCohortType() {
         // Arrange
         CohortType cohortType = CohortType.PREMIUM;
         Set<String> customerIds = new HashSet<>(Arrays.asList("123", "456", "789"));
-        when(cohortService.getCohortCustomerIdsByType(cohortType)).thenReturn(customerIds);
+        when(cohortService.getCustomerIdsByCohortType(cohortType)).thenReturn(customerIds);
         
         // Act
-        ResponseEntity<Set<String>> response = cohortController.getCohortCustomerIdsByType(cohortType);
+        ResponseEntity<Set<String>> response = cohortController.getCustomerIdsByCohortType(cohortType);
         
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -121,14 +120,14 @@ public class CohortControllerTest {
     }
     
     @Test
-    public void testGetCohortCustomerIdsByType_Empty() {
+    public void testGetCustomerIdsByCohortType_Empty() {
         // Arrange
         CohortType cohortType = CohortType.PREMIUM;
         Set<String> customerIds = new HashSet<>();
-        when(cohortService.getCohortCustomerIdsByType(cohortType)).thenReturn(customerIds);
+        when(cohortService.getCustomerIdsByCohortType(cohortType)).thenReturn(customerIds);
         
         // Act
-        ResponseEntity<Set<String>> response = cohortController.getCohortCustomerIdsByType(cohortType);
+        ResponseEntity<Set<String>> response = cohortController.getCustomerIdsByCohortType(cohortType);
         
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());

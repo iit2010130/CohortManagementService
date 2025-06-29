@@ -1,6 +1,5 @@
 package com.cohortmgmt.service;
 
-import com.cohortmgmt.model.Cohort;
 import com.cohortmgmt.model.CohortType;
 import com.cohortmgmt.model.Customer;
 import com.cohortmgmt.repository.CohortRepository;
@@ -13,7 +12,6 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of the CohortService interface.
@@ -38,7 +36,7 @@ public class CohortServiceImpl implements CohortService, ApplicationListener<Con
         if (rules != null) {
             this.rules.addAll(rules);
         }
-        // Removed initializeCohorts() from constructor to avoid startup issues
+        // Removed initialization from constructor to avoid startup issues
     }
     
     /**
@@ -50,18 +48,13 @@ public class CohortServiceImpl implements CohortService, ApplicationListener<Con
     }
     
     /**
-     * Initializes the cohorts based on the configured rules.
+     * Initializes the cohort types based on the configured rules.
      * Made public so it can be called from DataInitializer.
      */
-    public void initializeCohorts() {
-        for (CohortRule rule : rules) {
-            String cohortId = rule.getName() + "_" + rule.getCohortType().name();
-            if (!cohortRepository.existsById(cohortId)) {
-                Cohort cohort = new Cohort(cohortId, rule.getCohortType(), 
-                        "Cohort for " + rule.getName() + " rule with type " + rule.getCohortType().name());
-                cohortRepository.save(cohort);
-            }
-        }
+    @Override
+    public void initializeCohortTypes() {
+        // No initialization needed for cohort types since they are enum values
+        logger.info("Cohort types initialized");
     }
     
     /**
@@ -71,32 +64,25 @@ public class CohortServiceImpl implements CohortService, ApplicationListener<Con
      */
     public void addRule(CohortRule rule) {
         rules.add(rule);
-        String cohortId = rule.getName() + "_" + rule.getCohortType().name();
-        if (!cohortRepository.existsById(cohortId)) {
-            Cohort cohort = new Cohort(cohortId, rule.getCohortType(), 
-                    "Cohort for " + rule.getName() + " rule with type " + rule.getCohortType().name());
-            cohortRepository.save(cohort);
-        }
+        logger.info("Added rule: {} for cohort type: {}", rule.getName(), rule.getCohortType());
     }
     
     @Override
-    public Set<String> classifyCustomer(Customer customer) {
+    public Set<CohortType> classifyCustomer(Customer customer) {
         if (customer == null) {
             logger.warn("Cannot classify null customer");
             return Collections.emptySet();
         }
         
-        Set<String> cohortIds = new HashSet<>();
+        Set<CohortType> cohortTypes = new HashSet<>();
         
         for (CohortRule rule : rules) {
             try {
                 if (rule.evaluate(customer)) {
-                    String cohortId = rule.getName() + "_" + rule.getCohortType().name();
-                    Optional<Cohort> cohortOpt = cohortRepository.findById(cohortId);
-                    if (cohortOpt.isPresent()) {
-                        cohortRepository.addCustomerToCohort(cohortId, customer.getCustomerId());
-                        cohortIds.add(cohortId);
-                    }
+                    CohortType cohortType = rule.getCohortType();
+                    cohortRepository.addCustomerToCohortType(cohortType, customer.getCustomerId());
+                    cohortTypes.add(cohortType);
+                    logger.info("Customer {} classified into cohort type {}", customer.getCustomerId(), cohortType);
                 }
             } catch (Exception e) {
                 logger.error("Error evaluating rule {} for customer {}: {}", 
@@ -104,7 +90,7 @@ public class CohortServiceImpl implements CohortService, ApplicationListener<Con
             }
         }
         
-        return cohortIds;
+        return cohortTypes;
     }
     
     @Override
@@ -113,56 +99,24 @@ public class CohortServiceImpl implements CohortService, ApplicationListener<Con
             return false;
         }
         
-        // Get all cohorts for the customer
-        List<Cohort> cohorts = cohortRepository.findByCustomerId(customerId);
-        
-        // Check if any of the cohorts match the specified type
-        for (Cohort cohort : cohorts) {
-            if (cohort.getType() == cohortType) {
-                return true;
-            }
-        }
-        
-        return false;
+        return cohortRepository.isCustomerInCohortType(customerId, cohortType);
     }
     
     @Override
-    public List<Cohort> getCustomerCohorts(String customerId) {
+    public List<CohortType> getCustomerCohortTypes(String customerId) {
         if (customerId == null) {
             return Collections.emptyList();
         }
         
-        return cohortRepository.findByCustomerId(customerId);
+        return cohortRepository.findCohortTypesByCustomerId(customerId);
     }
     
     @Override
-    public Set<String> getCohortCustomerIdsByType(CohortType cohortType) {
+    public Set<String> getCustomerIdsByCohortType(CohortType cohortType) {
         if (cohortType == null) {
             return Collections.emptySet();
         }
         
-        Set<String> customerIds = new HashSet<>();
-        
-        // Get all cohorts
-        List<Cohort> allCohorts = new ArrayList<>();
-        
-        // Since we don't have findAll() or findByType() anymore, we need to use a different approach
-        // We'll use the cohort IDs from the rules to find all cohorts
-        for (CohortRule rule : rules) {
-            if (rule.getCohortType() == cohortType) {
-                String cohortId = rule.getName() + "_" + rule.getCohortType().name();
-                Optional<Cohort> cohortOpt = cohortRepository.findById(cohortId);
-                if (cohortOpt.isPresent()) {
-                    allCohorts.add(cohortOpt.get());
-                }
-            }
-        }
-        
-        // Collect all customer IDs from the cohorts
-        for (Cohort cohort : allCohorts) {
-            customerIds.addAll(cohort.getCustomerIds());
-        }
-        
-        return customerIds;
+        return cohortRepository.getCustomerIdsByCohortType(cohortType);
     }
 }

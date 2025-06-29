@@ -1,6 +1,5 @@
 package com.cohortmgmt.service;
 
-import com.cohortmgmt.model.Cohort;
 import com.cohortmgmt.model.CohortType;
 import com.cohortmgmt.model.Customer;
 import com.cohortmgmt.model.UserType;
@@ -33,7 +32,6 @@ public class CohortServiceImplTest {
     
     private Customer premiumCustomer;
     private Customer normalCustomer;
-    private Cohort premiumCohort;
     
     @BeforeEach
     public void setup() {
@@ -51,20 +49,13 @@ public class CohortServiceImplTest {
         premiumCustomer = new Customer("premium-customer", 6000.0, UserType.PAID);
         normalCustomer = new Customer("normal-customer", 3000.0, UserType.FREE);
         
-        // Create test cohort
-        premiumCohort = new Cohort("TestRule_PREMIUM", CohortType.PREMIUM, "Premium customers");
-        Set<String> customerIds = new HashSet<>();
-        customerIds.add(premiumCustomer.getCustomerId());
-        premiumCohort.setCustomerIds(customerIds);
-        
         // Set up the mock repository
-        when(cohortRepository.existsById(anyString())).thenReturn(false);
-        when(cohortRepository.save(any(Cohort.class))).thenReturn(premiumCohort);
-        when(cohortRepository.findById("TestRule_PREMIUM")).thenReturn(Optional.of(premiumCohort));
-        when(cohortRepository.findByType(CohortType.PREMIUM)).thenReturn(Collections.singletonList(premiumCohort));
-        when(cohortRepository.findByCustomerId(premiumCustomer.getCustomerId())).thenReturn(Collections.singletonList(premiumCohort));
-        when(cohortRepository.findByCustomerId(normalCustomer.getCustomerId())).thenReturn(Collections.emptyList());
-        when(cohortRepository.getCustomerIds("TestRule_PREMIUM")).thenReturn(premiumCohort.getCustomerIds());
+        when(cohortRepository.isCustomerInCohortType(premiumCustomer.getCustomerId(), CohortType.PREMIUM)).thenReturn(true);
+        when(cohortRepository.isCustomerInCohortType(normalCustomer.getCustomerId(), CohortType.PREMIUM)).thenReturn(false);
+        when(cohortRepository.findCohortTypesByCustomerId(premiumCustomer.getCustomerId())).thenReturn(Collections.singletonList(CohortType.PREMIUM));
+        when(cohortRepository.findCohortTypesByCustomerId(normalCustomer.getCustomerId())).thenReturn(Collections.emptyList());
+        when(cohortRepository.getCustomerIdsByCohortType(CohortType.PREMIUM)).thenReturn(Collections.singleton(premiumCustomer.getCustomerId()));
+        when(cohortRepository.getCustomerIdsByCohortType(CohortType.FRAUD)).thenReturn(Collections.emptySet());
     }
     
     @Test
@@ -73,13 +64,13 @@ public class CohortServiceImplTest {
         when(mockRule.evaluate(premiumCustomer)).thenReturn(true);
         
         // Act
-        Set<String> cohortIds = cohortService.classifyCustomer(premiumCustomer);
+        Set<CohortType> cohortTypes = cohortService.classifyCustomer(premiumCustomer);
         
         // Assert
-        assertNotNull(cohortIds);
-        assertEquals(1, cohortIds.size());
-        assertTrue(cohortIds.contains("TestRule_PREMIUM"));
-        verify(cohortRepository).addCustomerToCohort("TestRule_PREMIUM", premiumCustomer.getCustomerId());
+        assertNotNull(cohortTypes);
+        assertEquals(1, cohortTypes.size());
+        assertTrue(cohortTypes.contains(CohortType.PREMIUM));
+        verify(cohortRepository).addCustomerToCohortType(CohortType.PREMIUM, premiumCustomer.getCustomerId());
     }
     
     @Test
@@ -88,23 +79,23 @@ public class CohortServiceImplTest {
         when(mockRule.evaluate(normalCustomer)).thenReturn(false);
         
         // Act
-        Set<String> cohortIds = cohortService.classifyCustomer(normalCustomer);
+        Set<CohortType> cohortTypes = cohortService.classifyCustomer(normalCustomer);
         
         // Assert
-        assertNotNull(cohortIds);
-        assertTrue(cohortIds.isEmpty());
-        verify(cohortRepository, never()).addCustomerToCohort(anyString(), anyString());
+        assertNotNull(cohortTypes);
+        assertTrue(cohortTypes.isEmpty());
+        verify(cohortRepository, never()).addCustomerToCohortType(any(CohortType.class), anyString());
     }
     
     @Test
     public void testClassifyCustomer_NullCustomer() {
         // Act
-        Set<String> cohortIds = cohortService.classifyCustomer(null);
+        Set<CohortType> cohortTypes = cohortService.classifyCustomer(null);
         
         // Assert
-        assertNotNull(cohortIds);
-        assertTrue(cohortIds.isEmpty());
-        verify(cohortRepository, never()).addCustomerToCohort(anyString(), anyString());
+        assertNotNull(cohortTypes);
+        assertTrue(cohortTypes.isEmpty());
+        verify(cohortRepository, never()).addCustomerToCohortType(any(CohortType.class), anyString());
     }
     
     @Test
@@ -113,12 +104,12 @@ public class CohortServiceImplTest {
         when(mockRule.evaluate(premiumCustomer)).thenThrow(new RuntimeException("Test exception"));
         
         // Act
-        Set<String> cohortIds = cohortService.classifyCustomer(premiumCustomer);
+        Set<CohortType> cohortTypes = cohortService.classifyCustomer(premiumCustomer);
         
         // Assert
-        assertNotNull(cohortIds);
-        assertTrue(cohortIds.isEmpty());
-        verify(cohortRepository, never()).addCustomerToCohort(anyString(), anyString());
+        assertNotNull(cohortTypes);
+        assertTrue(cohortTypes.isEmpty());
+        verify(cohortRepository, never()).addCustomerToCohortType(any(CohortType.class), anyString());
     }
     
     @Test
@@ -158,40 +149,40 @@ public class CohortServiceImplTest {
     }
     
     @Test
-    public void testGetCustomerCohorts() {
+    public void testGetCustomerCohortTypes() {
         // Act
-        List<Cohort> cohorts = cohortService.getCustomerCohorts(premiumCustomer.getCustomerId());
+        List<CohortType> cohortTypes = cohortService.getCustomerCohortTypes(premiumCustomer.getCustomerId());
         
         // Assert
-        assertNotNull(cohorts);
-        assertEquals(1, cohorts.size());
-        assertEquals(premiumCohort.getId(), cohorts.get(0).getId());
+        assertNotNull(cohortTypes);
+        assertEquals(1, cohortTypes.size());
+        assertEquals(CohortType.PREMIUM, cohortTypes.get(0));
     }
     
     @Test
-    public void testGetCustomerCohorts_NoCohorts() {
+    public void testGetCustomerCohortTypes_NoCohorts() {
         // Act
-        List<Cohort> cohorts = cohortService.getCustomerCohorts(normalCustomer.getCustomerId());
+        List<CohortType> cohortTypes = cohortService.getCustomerCohortTypes(normalCustomer.getCustomerId());
         
         // Assert
-        assertNotNull(cohorts);
-        assertTrue(cohorts.isEmpty());
+        assertNotNull(cohortTypes);
+        assertTrue(cohortTypes.isEmpty());
     }
     
     @Test
-    public void testGetCustomerCohorts_NullCustomerId() {
+    public void testGetCustomerCohortTypes_NullCustomerId() {
         // Act
-        List<Cohort> cohorts = cohortService.getCustomerCohorts(null);
+        List<CohortType> cohortTypes = cohortService.getCustomerCohortTypes(null);
         
         // Assert
-        assertNotNull(cohorts);
-        assertTrue(cohorts.isEmpty());
+        assertNotNull(cohortTypes);
+        assertTrue(cohortTypes.isEmpty());
     }
     
     @Test
-    public void testGetCohortCustomerIdsByType() {
+    public void testGetCustomerIdsByCohortType() {
         // Act
-        Set<String> customerIds = cohortService.getCohortCustomerIdsByType(CohortType.PREMIUM);
+        Set<String> customerIds = cohortService.getCustomerIdsByCohortType(CohortType.PREMIUM);
         
         // Assert
         assertNotNull(customerIds);
@@ -200,12 +191,9 @@ public class CohortServiceImplTest {
     }
     
     @Test
-    public void testGetCohortCustomerIdsByType_NoCohorts() {
-        // Arrange
-        when(cohortRepository.findByType(CohortType.FRAUD)).thenReturn(Collections.emptyList());
-        
+    public void testGetCustomerIdsByCohortType_NoCohorts() {
         // Act
-        Set<String> customerIds = cohortService.getCohortCustomerIdsByType(CohortType.FRAUD);
+        Set<String> customerIds = cohortService.getCustomerIdsByCohortType(CohortType.FRAUD);
         
         // Assert
         assertNotNull(customerIds);
@@ -213,9 +201,9 @@ public class CohortServiceImplTest {
     }
     
     @Test
-    public void testGetCohortCustomerIdsByType_NullCohortType() {
+    public void testGetCustomerIdsByCohortType_NullCohortType() {
         // Act
-        Set<String> customerIds = cohortService.getCohortCustomerIdsByType(null);
+        Set<String> customerIds = cohortService.getCustomerIdsByCohortType(null);
         
         // Assert
         assertNotNull(customerIds);
@@ -233,7 +221,6 @@ public class CohortServiceImplTest {
         cohortService.addRule(newRule);
         
         // Assert
-        verify(cohortRepository).existsById("NewRule_NORMAL");
-        verify(cohortRepository).save(any(Cohort.class));
+        verify(cohortRepository, never()).addCustomerToCohortType(any(CohortType.class), anyString());
     }
 }

@@ -189,6 +189,23 @@ public List<CohortRule> cohortRules() {
 
 ## Troubleshooting
 
+### SQS Queue Does Not Exist Error
+
+If you see the following error in your application logs:
+
+```
+ERROR --- [scheduling-1] c.c.s.CustomerDataProcessingService : Error receiving messages from SQS: The specified queue does not exist for this wsdl version. (Service: AmazonSQS; Status Code: 400; Error Code: AWS.SimpleQueueService.NonExistentQueue)
+```
+
+This is because the application is trying to connect to an SQS queue that doesn't exist yet. To fix this:
+
+```bash
+# Create the SQS queue
+aws sqs create-queue --queue-name customer-data-queue --endpoint-url http://localhost:4566
+```
+
+After creating the queue, the error should stop appearing in the logs.
+
 ### LocalStack Issues
 
 If you encounter issues with LocalStack, you can check the logs:

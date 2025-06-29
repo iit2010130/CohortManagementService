@@ -3,6 +3,7 @@ package com.cohortmgmt.service;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
+import com.cohortmgmt.model.CohortType;
 import com.cohortmgmt.model.Customer;
 import com.cohortmgmt.model.UserType;
 import com.cohortmgmt.repository.CustomerRepository;
@@ -55,16 +56,11 @@ public class CustomerDataProcessingService {
     @Scheduled(fixedDelay = 10000)
     public void processCustomerData() {
         try {
-            // For LocalStack, we need to construct the queue URL directly
-            String queueUrl = endpoint + "/000000000000/" + queueName;
-            
-            try {
-                // Try to get the queue URL from the service first
-                queueUrl = amazonSQS.getQueueUrl(queueName).getQueueUrl();
-                logger.debug("Using queue URL from SQS service: {}", queueUrl);
-            } catch (Exception e) {
-                // If that fails, use the constructed URL
-                logger.debug("Using constructed queue URL: {}", queueUrl);
+            // First, ensure the queue exists
+            String queueUrl = ensureQueueExists();
+            if (queueUrl == null) {
+                // Queue doesn't exist and couldn't be created, skip processing
+                return;
             }
             
             ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest()
@@ -83,7 +79,35 @@ public class CustomerDataProcessingService {
                 }
             }
         } catch (Exception e) {
-            logger.error("Error receiving messages from SQS: {}", e.getMessage(), e);
+            // Log at debug level to avoid filling logs with expected errors during startup
+            logger.debug("Error receiving messages from SQS: {}", e.getMessage());
+        }
+    }
+    
+    /**
+     * Ensures that the SQS queue exists, creating it if necessary.
+     * 
+     * @return The queue URL if the queue exists or was created, null otherwise
+     */
+    private String ensureQueueExists() {
+        try {
+            // Try to get the queue URL from the service first
+            try {
+                String queueUrl = amazonSQS.getQueueUrl(queueName).getQueueUrl();
+                logger.debug("Queue exists, URL: {}", queueUrl);
+                return queueUrl;
+            } catch (Exception e) {
+                // Queue doesn't exist, try to create it
+                logger.debug("Queue doesn't exist, creating: {}", queueName);
+                String queueUrl = amazonSQS.createQueue(queueName).getQueueUrl();
+                logger.info("Created SQS queue: {} with URL: {}", queueName, queueUrl);
+                return queueUrl;
+            }
+        } catch (Exception e) {
+            // If all else fails, use the constructed URL for LocalStack
+            String constructedUrl = endpoint + "/000000000000/" + queueName;
+            logger.debug("Using constructed queue URL: {}", constructedUrl);
+            return constructedUrl;
         }
     }
     
@@ -106,9 +130,9 @@ public class CustomerDataProcessingService {
         // Save the customer to the repository
         customerRepository.save(customer);
         
-        // Classify the customer into cohorts
-        Set<String> cohortIds = cohortService.classifyCustomer(customer);
+        // Classify the customer into cohort types
+        Set<CohortType> cohortTypes = cohortService.classifyCustomer(customer);
         
-        logger.info("Processed customer {} and classified into cohorts: {}", customerId, cohortIds);
+        logger.info("Processed customer {} and classified into cohort types: {}", customerId, cohortTypes);
     }
 }

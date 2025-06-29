@@ -1,6 +1,5 @@
 package com.cohortmgmt.integration;
 
-import com.cohortmgmt.model.Cohort;
 import com.cohortmgmt.model.CohortType;
 import com.cohortmgmt.model.Customer;
 import com.cohortmgmt.model.UserType;
@@ -16,9 +15,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
-import java.util.HashSet;
-import java.util.Set;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -46,7 +42,6 @@ public class CohortControllerIntegrationTest {
     
     private Customer premiumCustomer;
     private Customer normalCustomer;
-    private Cohort premiumCohort;
     
     @BeforeEach
     public void setup() {
@@ -58,14 +53,8 @@ public class CohortControllerIntegrationTest {
         customerRepository.save(premiumCustomer);
         customerRepository.save(normalCustomer);
         
-        // Create test cohort
-        premiumCohort = new Cohort("DailySpend_PREMIUM", CohortType.PREMIUM, "Premium customers");
-        Set<String> customerIds = new HashSet<>();
-        customerIds.add(premiumCustomer.getCustomerId());
-        premiumCohort.setCustomerIds(customerIds);
-        
-        // Save cohort to repository
-        cohortRepository.save(premiumCohort);
+        // Add premium customer to PREMIUM cohort type
+        cohortRepository.addCustomerToCohortType(CohortType.PREMIUM, premiumCustomer.getCustomerId());
     }
     
     @Test
@@ -89,18 +78,17 @@ public class CohortControllerIntegrationTest {
     }
     
     @Test
-    public void testGetCustomerCohorts() throws Exception {
+    public void testGetCustomerCohortTypes() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/cohorts/customer/{customerId}", 
                 premiumCustomer.getCustomerId())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(premiumCohort.getId())))
-                .andExpect(jsonPath("$[0].type", is(premiumCohort.getType().name())));
+                .andExpect(jsonPath("$[0]", is(CohortType.PREMIUM.name())));
     }
     
     @Test
-    public void testGetCustomerCohorts_Empty() throws Exception {
+    public void testGetCustomerCohortTypes_Empty() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/cohorts/customer/{customerId}", 
                 normalCustomer.getCustomerId())
                 .contentType(MediaType.APPLICATION_JSON))
@@ -109,7 +97,7 @@ public class CohortControllerIntegrationTest {
     }
     
     @Test
-    public void testGetCohortCustomerIdsByType() throws Exception {
+    public void testGetCustomerIdsByCohortType() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/cohorts/type/{cohortType}/customers", 
                 CohortType.PREMIUM.name())
                 .contentType(MediaType.APPLICATION_JSON))
@@ -119,7 +107,7 @@ public class CohortControllerIntegrationTest {
     }
     
     @Test
-    public void testGetCohortCustomerIdsByType_Empty() throws Exception {
+    public void testGetCustomerIdsByCohortType_Empty() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/cohorts/type/{cohortType}/customers", 
                 CohortType.FRAUD.name())
                 .contentType(MediaType.APPLICATION_JSON))

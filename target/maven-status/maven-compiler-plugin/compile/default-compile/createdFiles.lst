@@ -1,5 +1,4 @@
 com/cohortmgmt/repository/DynamoDBCustomerRepository.class
-com/cohortmgmt/model/Cohort.class
 com/cohortmgmt/model/CohortType.class
 com/cohortmgmt/service/rule/CohortRule.class
 com/cohortmgmt/config/AwsConfig.class

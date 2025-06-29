@@ -1,4 +1,5 @@
 /Volumes/workspace/CohortManagementService/CohortManagementService/src/test/java/com/cohortmgmt/config/TestConfig.java
+/Volumes/workspace/CohortManagementService/CohortManagementService/src/test/java/com/cohortmgmt/service/rule/MidSpendRuleTest.java
 /Volumes/workspace/CohortManagementService/CohortManagementService/src/test/java/com/cohortmgmt/service/rule/DailySpendRuleTest.java
 /Volumes/workspace/CohortManagementService/CohortManagementService/src/test/java/com/cohortmgmt/controller/CohortControllerTest.java
 /Volumes/workspace/CohortManagementService/CohortManagementService/src/test/java/com/cohortmgmt/service/CohortServiceImplTest.java

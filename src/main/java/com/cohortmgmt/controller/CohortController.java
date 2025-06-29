@@ -1,7 +1,5 @@
 package com.cohortmgmt.controller;
 
-import com.cohortmgmt.exception.ResourceNotFoundException;
-import com.cohortmgmt.model.Cohort;
 import com.cohortmgmt.model.CohortType;
 import com.cohortmgmt.service.CohortService;
 import org.slf4j.Logger;
@@ -34,7 +32,7 @@ public class CohortController {
      *
      * @param customerId The ID of the customer to check
      * @param cohortType The type of cohort to check
-     * @return true if the customer is in any cohort of the specified type, false otherwise
+     * @return true if the customer is in the cohort type, false otherwise
      */
     @GetMapping("/check")
     public ResponseEntity<Boolean> isCustomerInCohortType(
@@ -59,45 +57,45 @@ public class CohortController {
     }
     
     /**
-     * Gets all cohorts associated with a customer.
+     * Gets all cohort types associated with a customer.
      *
      * @param customerId The ID of the customer
-     * @return The list of cohorts the customer is in
+     * @return The list of cohort types the customer is in
      */
     @GetMapping("/customer/{customerId}")
-    public ResponseEntity<List<Cohort>> getCustomerCohorts(@PathVariable("customerId") String customerId) {
-        logger.info("Getting cohorts for customer: {}", customerId);
+    public ResponseEntity<List<CohortType>> getCustomerCohortTypes(@PathVariable("customerId") String customerId) {
+        logger.info("Getting cohort types for customer: {}", customerId);
         
         if (customerId == null || customerId.trim().isEmpty()) {
             throw new IllegalArgumentException("Customer ID cannot be null or empty");
         }
         
-        List<Cohort> cohorts = cohortService.getCustomerCohorts(customerId);
+        List<CohortType> cohortTypes = cohortService.getCustomerCohortTypes(customerId);
         
-        if (cohorts.isEmpty()) {
-            logger.warn("No cohorts found for customer: {}", customerId);
+        if (cohortTypes.isEmpty()) {
+            logger.warn("No cohort types found for customer: {}", customerId);
         } else {
-            logger.info("Found {} cohorts for customer: {}", cohorts.size(), customerId);
+            logger.info("Found {} cohort types for customer: {}", cohortTypes.size(), customerId);
         }
         
-        return ResponseEntity.ok(cohorts);
+        return ResponseEntity.ok(cohortTypes);
     }
     
     /**
      * Gets all customer IDs for a specific cohort type.
      *
      * @param cohortType The type of cohort
-     * @return The set of customer IDs in cohorts of the specified type
+     * @return The set of customer IDs in the cohort type
      */
     @GetMapping("/type/{cohortType}/customers")
-    public ResponseEntity<Set<String>> getCohortCustomerIdsByType(@PathVariable("cohortType") CohortType cohortType) {
+    public ResponseEntity<Set<String>> getCustomerIdsByCohortType(@PathVariable("cohortType") CohortType cohortType) {
         logger.info("Getting customer IDs for cohort type: {}", cohortType);
         
         if (cohortType == null) {
             throw new IllegalArgumentException("Cohort type cannot be null");
         }
         
-        Set<String> customerIds = cohortService.getCohortCustomerIdsByType(cohortType);
+        Set<String> customerIds = cohortService.getCustomerIdsByCohortType(cohortType);
         
         if (customerIds.isEmpty()) {
             logger.warn("No customers found for cohort type: {}", cohortType);

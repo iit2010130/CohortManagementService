@@ -1,68 +1,84 @@
 -------------------------------------------------------------------------------
 Test set: com.cohortmgmt.integration.CohortControllerIntegrationTest
 -------------------------------------------------------------------------------
-Tests run: 8, Failures: 0, Errors: 8, Skipped: 0, Time elapsed: 1.279 s <<< FAILURE! - in com.cohortmgmt.integration.CohortControllerIntegrationTest
-testIsCustomerInCohortType_MissingParameter  Time elapsed: 0.002 s  <<< ERROR!
-java.lang.IllegalStateException: Failed to load ApplicationContext
-Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'cohortController' defined in file [/Volumes/workspace/CohortManagementService/CohortManagementService/target/classes/com/cohortmgmt/controller/CohortController.class]: Unsatisfied dependency expressed through constructor parameter 0; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'cohortServiceImpl' defined in file [/Volumes/workspace/CohortManagementService/CohortManagementService/target/classes/com/cohortmgmt/service/CohortServiceImpl.class]: Bean instantiation via constructor failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.cohortmgmt.service.CohortServiceImpl]: Constructor threw exception; nested exception is java.lang.RuntimeException: Error saving cohort
-Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'cohortServiceImpl' defined in file [/Volumes/workspace/CohortManagementService/CohortManagementService/target/classes/com/cohortmgmt/service/CohortServiceImpl.class]: Bean instantiation via constructor failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.cohortmgmt.service.CohortServiceImpl]: Constructor threw exception; nested exception is java.lang.RuntimeException: Error saving cohort
-Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.cohortmgmt.service.CohortServiceImpl]: Constructor threw exception; nested exception is java.lang.RuntimeException: Error saving cohort
-Caused by: java.lang.RuntimeException: Error saving cohort
-Caused by: com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException: Cannot do operations on a non-existent table (Service: AmazonDynamoDBv2; Status Code: 400; Error Code: ResourceNotFoundException; Request ID: f911cd67-774c-418a-b924-4582cc5af378; Proxy: null)
+Tests run: 8, Failures: 0, Errors: 8, Skipped: 0, Time elapsed: 132.071 s <<< FAILURE! - in com.cohortmgmt.integration.CohortControllerIntegrationTest
+testIsCustomerInCohortType_MissingParameter  Time elapsed: 18.214 s  <<< ERROR!
+java.lang.RuntimeException: Error saving customer
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
+Caused by: com.amazonaws.SdkClientException: Unable to execute HTTP request: Connect to localhost:4566 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
+Caused by: org.apache.http.conn.HttpHostConnectException: Connect to localhost:4566 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
+Caused by: java.net.ConnectException: Connection refused
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
 
-testIsCustomerInCohortType_InvalidCustomerId  Time elapsed: 0 s  <<< ERROR!
-java.lang.IllegalStateException: Failed to load ApplicationContext
-Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'cohortController' defined in file [/Volumes/workspace/CohortManagementService/CohortManagementService/target/classes/com/cohortmgmt/controller/CohortController.class]: Unsatisfied dependency expressed through constructor parameter 0; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'cohortServiceImpl' defined in file [/Volumes/workspace/CohortManagementService/CohortManagementService/target/classes/com/cohortmgmt/service/CohortServiceImpl.class]: Bean instantiation via constructor failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.cohortmgmt.service.CohortServiceImpl]: Constructor threw exception; nested exception is java.lang.RuntimeException: Error saving cohort
-Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'cohortServiceImpl' defined in file [/Volumes/workspace/CohortManagementService/CohortManagementService/target/classes/com/cohortmgmt/service/CohortServiceImpl.class]: Bean instantiation via constructor failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.cohortmgmt.service.CohortServiceImpl]: Constructor threw exception; nested exception is java.lang.RuntimeException: Error saving cohort
-Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.cohortmgmt.service.CohortServiceImpl]: Constructor threw exception; nested exception is java.lang.RuntimeException: Error saving cohort
-Caused by: java.lang.RuntimeException: Error saving cohort
-Caused by: com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException: Cannot do operations on a non-existent table (Service: AmazonDynamoDBv2; Status Code: 400; Error Code: ResourceNotFoundException; Request ID: 0f9f5bc0-6770-433f-a806-481a60cb4174; Proxy: null)
+testIsCustomerInCohortType_InvalidCustomerId  Time elapsed: 10.913 s  <<< ERROR!
+java.lang.RuntimeException: Error saving customer
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
+Caused by: com.amazonaws.SdkClientException: Unable to execute HTTP request: Connect to localhost:4566 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
+Caused by: org.apache.http.conn.HttpHostConnectException: Connect to localhost:4566 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
+Caused by: java.net.ConnectException: Connection refused
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
 
-testIsCustomerInCohortType_True  Time elapsed: 0 s  <<< ERROR!
-java.lang.IllegalStateException: Failed to load ApplicationContext
-Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'cohortController' defined in file [/Volumes/workspace/CohortManagementService/CohortManagementService/target/classes/com/cohortmgmt/controller/CohortController.class]: Unsatisfied dependency expressed through constructor parameter 0; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'cohortServiceImpl' defined in file [/Volumes/workspace/CohortManagementService/CohortManagementService/target/classes/com/cohortmgmt/service/CohortServiceImpl.class]: Bean instantiation via constructor failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.cohortmgmt.service.CohortServiceImpl]: Constructor threw exception; nested exception is java.lang.RuntimeException: Error saving cohort
-Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'cohortServiceImpl' defined in file [/Volumes/workspace/CohortManagementService/CohortManagementService/target/classes/com/cohortmgmt/service/CohortServiceImpl.class]: Bean instantiation via constructor failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.cohortmgmt.service.CohortServiceImpl]: Constructor threw exception; nested exception is java.lang.RuntimeException: Error saving cohort
-Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.cohortmgmt.service.CohortServiceImpl]: Constructor threw exception; nested exception is java.lang.RuntimeException: Error saving cohort
-Caused by: java.lang.RuntimeException: Error saving cohort
-Caused by: com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException: Cannot do operations on a non-existent table (Service: AmazonDynamoDBv2; Status Code: 400; Error Code: ResourceNotFoundException; Request ID: bbf923d5-aaee-4cc0-a6dd-81a2ef319470; Proxy: null)
+testIsCustomerInCohortType_True  Time elapsed: 14.375 s  <<< ERROR!
+java.lang.RuntimeException: Error saving customer
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
+Caused by: com.amazonaws.SdkClientException: Unable to execute HTTP request: Connect to localhost:4566 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
+Caused by: org.apache.http.conn.HttpHostConnectException: Connect to localhost:4566 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
+Caused by: java.net.ConnectException: Connection refused
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
 
-testGetCohortCustomerIdsByType_Empty  Time elapsed: 0 s  <<< ERROR!
-java.lang.IllegalStateException: Failed to load ApplicationContext
-Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'cohortController' defined in file [/Volumes/workspace/CohortManagementService/CohortManagementService/target/classes/com/cohortmgmt/controller/CohortController.class]: Unsatisfied dependency expressed through constructor parameter 0; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'cohortServiceImpl' defined in file [/Volumes/workspace/CohortManagementService/CohortManagementService/target/classes/com/cohortmgmt/service/CohortServiceImpl.class]: Bean instantiation via constructor failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.cohortmgmt.service.CohortServiceImpl]: Constructor threw exception; nested exception is java.lang.RuntimeException: Error saving cohort
-Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'cohortServiceImpl' defined in file [/Volumes/workspace/CohortManagementService/CohortManagementService/target/classes/com/cohortmgmt/service/CohortServiceImpl.class]: Bean instantiation via constructor failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.cohortmgmt.service.CohortServiceImpl]: Constructor threw exception; nested exception is java.lang.RuntimeException: Error saving cohort
-Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.cohortmgmt.service.CohortServiceImpl]: Constructor threw exception; nested exception is java.lang.RuntimeException: Error saving cohort
-Caused by: java.lang.RuntimeException: Error saving cohort
-Caused by: com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException: Cannot do operations on a non-existent table (Service: AmazonDynamoDBv2; Status Code: 400; Error Code: ResourceNotFoundException; Request ID: 6da60524-ce0f-4b14-aca0-a9386d9f8e2c; Proxy: null)
+testGetCustomerCohortTypes_Empty  Time elapsed: 12.738 s  <<< ERROR!
+java.lang.RuntimeException: Error saving customer
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
+Caused by: com.amazonaws.SdkClientException: Unable to execute HTTP request: Connect to localhost:4566 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
+Caused by: org.apache.http.conn.HttpHostConnectException: Connect to localhost:4566 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
+Caused by: java.net.ConnectException: Connection refused
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
 
-testIsCustomerInCohortType_False  Time elapsed: 0 s  <<< ERROR!
-java.lang.IllegalStateException: Failed to load ApplicationContext
-Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'cohortController' defined in file [/Volumes/workspace/CohortManagementService/CohortManagementService/target/classes/com/cohortmgmt/controller/CohortController.class]: Unsatisfied dependency expressed through constructor parameter 0; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'cohortServiceImpl' defined in file [/Volumes/workspace/CohortManagementService/CohortManagementService/target/classes/com/cohortmgmt/service/CohortServiceImpl.class]: Bean instantiation via constructor failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.cohortmgmt.service.CohortServiceImpl]: Constructor threw exception; nested exception is java.lang.RuntimeException: Error saving cohort
-Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'cohortServiceImpl' defined in file [/Volumes/workspace/CohortManagementService/CohortManagementService/target/classes/com/cohortmgmt/service/CohortServiceImpl.class]: Bean instantiation via constructor failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.cohortmgmt.service.CohortServiceImpl]: Constructor threw exception; nested exception is java.lang.RuntimeException: Error saving cohort
-Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.cohortmgmt.service.CohortServiceImpl]: Constructor threw exception; nested exception is java.lang.RuntimeException: Error saving cohort
-Caused by: java.lang.RuntimeException: Error saving cohort
-Caused by: com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException: Cannot do operations on a non-existent table (Service: AmazonDynamoDBv2; Status Code: 400; Error Code: ResourceNotFoundException; Request ID: 44960cd1-d8a1-4f0d-9902-d777bfbb0996; Proxy: null)
+testIsCustomerInCohortType_False  Time elapsed: 5.112 s  <<< ERROR!
+java.lang.RuntimeException: Error saving customer
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
+Caused by: com.amazonaws.SdkClientException: Unable to execute HTTP request: Connect to localhost:4566 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
+Caused by: org.apache.http.conn.HttpHostConnectException: Connect to localhost:4566 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
+Caused by: java.net.ConnectException: Connection refused
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
 
-testGetCohortCustomerIdsByType  Time elapsed: 0 s  <<< ERROR!
-java.lang.IllegalStateException: Failed to load ApplicationContext
-Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'cohortController' defined in file [/Volumes/workspace/CohortManagementService/CohortManagementService/target/classes/com/cohortmgmt/controller/CohortController.class]: Unsatisfied dependency expressed through constructor parameter 0; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'cohortServiceImpl' defined in file [/Volumes/workspace/CohortManagementService/CohortManagementService/target/classes/com/cohortmgmt/service/CohortServiceImpl.class]: Bean instantiation via constructor failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.cohortmgmt.service.CohortServiceImpl]: Constructor threw exception; nested exception is java.lang.RuntimeException: Error saving cohort
-Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'cohortServiceImpl' defined in file [/Volumes/workspace/CohortManagementService/CohortManagementService/target/classes/com/cohortmgmt/service/CohortServiceImpl.class]: Bean instantiation via constructor failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.cohortmgmt.service.CohortServiceImpl]: Constructor threw exception; nested exception is java.lang.RuntimeException: Error saving cohort
-Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.cohortmgmt.service.CohortServiceImpl]: Constructor threw exception; nested exception is java.lang.RuntimeException: Error saving cohort
-Caused by: java.lang.RuntimeException: Error saving cohort
-Caused by: com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException: Cannot do operations on a non-existent table (Service: AmazonDynamoDBv2; Status Code: 400; Error Code: ResourceNotFoundException; Request ID: f8c8689b-dc79-460c-aad3-26d695e2ac2d; Proxy: null)
+testGetCustomerIdsByCohortType  Time elapsed: 11.078 s  <<< ERROR!
+java.lang.RuntimeException: Error saving customer
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
+Caused by: com.amazonaws.SdkClientException: Unable to execute HTTP request: Connect to localhost:4566 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
+Caused by: org.apache.http.conn.HttpHostConnectException: Connect to localhost:4566 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
+Caused by: java.net.ConnectException: Connection refused
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
 
-testGetCustomerCohorts_Empty  Time elapsed: 0 s  <<< ERROR!
-java.lang.IllegalStateException: Failed to load ApplicationContext
-Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'cohortController' defined in file [/Volumes/workspace/CohortManagementService/CohortManagementService/target/classes/com/cohortmgmt/controller/CohortController.class]: Unsatisfied dependency expressed through constructor parameter 0; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'cohortServiceImpl' defined in file [/Volumes/workspace/CohortManagementService/CohortManagementService/target/classes/com/cohortmgmt/service/CohortServiceImpl.class]: Bean instantiation via constructor failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.cohortmgmt.service.CohortServiceImpl]: Constructor threw exception; nested exception is java.lang.RuntimeException: Error saving cohort
-Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'cohortServiceImpl' defined in file [/Volumes/workspace/CohortManagementService/CohortManagementService/target/classes/com/cohortmgmt/service/CohortServiceImpl.class]: Bean instantiation via constructor failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.cohortmgmt.service.CohortServiceImpl]: Constructor threw exception; nested exception is java.lang.RuntimeException: Error saving cohort
-Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.cohortmgmt.service.CohortServiceImpl]: Constructor threw exception; nested exception is java.lang.RuntimeException: Error saving cohort
-Caused by: java.lang.RuntimeException: Error saving cohort
-Caused by: com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException: Cannot do operations on a non-existent table (Service: AmazonDynamoDBv2; Status Code: 400; Error Code: ResourceNotFoundException; Request ID: 32a27950-a1b9-4f99-8db9-097bcf48d19f; Proxy: null)
+testGetCustomerIdsByCohortType_Empty  Time elapsed: 19.014 s  <<< ERROR!
+java.lang.RuntimeException: Error saving customer
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
+Caused by: com.amazonaws.SdkClientException: Unable to execute HTTP request: Connect to localhost:4566 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
+Caused by: org.apache.http.conn.HttpHostConnectException: Connect to localhost:4566 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
+Caused by: java.net.ConnectException: Connection refused
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
 
-testGetCustomerCohorts  Time elapsed: 0.001 s  <<< ERROR!
-java.lang.IllegalStateException: Failed to load ApplicationContext
-Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'cohortController' defined in file [/Volumes/workspace/CohortManagementService/CohortManagementService/target/classes/com/cohortmgmt/controller/CohortController.class]: Unsatisfied dependency expressed through constructor parameter 0; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'cohortServiceImpl' defined in file [/Volumes/workspace/CohortManagementService/CohortManagementService/target/classes/com/cohortmgmt/service/CohortServiceImpl.class]: Bean instantiation via constructor failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.cohortmgmt.service.CohortServiceImpl]: Constructor threw exception; nested exception is java.lang.RuntimeException: Error saving cohort
-Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'cohortServiceImpl' defined in file [/Volumes/workspace/CohortManagementService/CohortManagementService/target/classes/com/cohortmgmt/service/CohortServiceImpl.class]: Bean instantiation via constructor failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.cohortmgmt.service.CohortServiceImpl]: Constructor threw exception; nested exception is java.lang.RuntimeException: Error saving cohort
-Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.cohortmgmt.service.CohortServiceImpl]: Constructor threw exception; nested exception is java.lang.RuntimeException: Error saving cohort
-Caused by: java.lang.RuntimeException: Error saving cohort
-Caused by: com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException: Cannot do operations on a non-existent table (Service: AmazonDynamoDBv2; Status Code: 400; Error Code: ResourceNotFoundException; Request ID: 8fdbac16-db27-46a3-8779-ef53aca6f6a7; Proxy: null)
+testGetCustomerCohortTypes  Time elapsed: 15.72 s  <<< ERROR!
+java.lang.RuntimeException: Error saving customer
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
+Caused by: com.amazonaws.SdkClientException: Unable to execute HTTP request: Connect to localhost:4566 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
+Caused by: org.apache.http.conn.HttpHostConnectException: Connect to localhost:4566 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
+Caused by: java.net.ConnectException: Connection refused
+	at com.cohortmgmt.integration.CohortControllerIntegrationTest.setup(CohortControllerIntegrationTest.java:53)
 
