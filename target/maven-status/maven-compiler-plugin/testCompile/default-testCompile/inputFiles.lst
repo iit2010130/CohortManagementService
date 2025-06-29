@@ -2,5 +2,7 @@
 /Volumes/workspace/CohortManagementService/CohortManagementService/src/test/java/com/cohortmgmt/service/rule/MidSpendRuleTest.java
 /Volumes/workspace/CohortManagementService/CohortManagementService/src/test/java/com/cohortmgmt/service/rule/DailySpendRuleTest.java
 /Volumes/workspace/CohortManagementService/CohortManagementService/src/test/java/com/cohortmgmt/controller/CohortControllerTest.java
+/Volumes/workspace/CohortManagementService/CohortManagementService/src/test/java/com/cohortmgmt/config/CohortRuleFactoryTest.java
 /Volumes/workspace/CohortManagementService/CohortManagementService/src/test/java/com/cohortmgmt/service/CohortServiceImplTest.java
 /Volumes/workspace/CohortManagementService/CohortManagementService/src/test/java/com/cohortmgmt/integration/CohortControllerIntegrationTest.java
+/Volumes/workspace/CohortManagementService/CohortManagementService/src/test/java/com/cohortmgmt/service/DynamoDBTriggerHandlerTest.java

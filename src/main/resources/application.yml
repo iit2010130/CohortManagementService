@@ -16,6 +16,33 @@ aws:
   sqs:
     queue-name: customer-data-queue
 
+# Cohort Rule Configuration
+cohort:
+  rules:
+    enabled: true
+    configurations:
+      # DailySpend rule for PREMIUM customers
+      - type: daily-spend
+        cohortType: PREMIUM
+        maxThreshold: 5000.0
+      
+      # MidSpend rule for NORMAL customers
+      - type: mid-spend
+        cohortType: NORMAL
+      
+      # MidSpend rule for PREMIUM customers who are PAID
+      - type: mid-spend
+        cohortType: PREMIUM
+      
+      # Example of a custom rule
+      # This rule classifies customers with daily spend between 1000 and 3000
+      # who are PAID users into the VIP cohort
+      - type: custom-rule
+        cohortType: VIP
+        minThreshold: 1000.0
+        maxThreshold: 3000.0
+        requirePaidUser: true
+
 # Logging Configuration
 logging:
   level:

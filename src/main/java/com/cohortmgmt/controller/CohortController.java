@@ -1,6 +1,9 @@
 package com.cohortmgmt.controller;
 
 import com.cohortmgmt.model.CohortType;
+import com.cohortmgmt.model.Customer;
+import com.cohortmgmt.model.UserType;
+import com.cohortmgmt.repository.CustomerRepository;
 import com.cohortmgmt.service.CohortService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,10 +24,12 @@ public class CohortController {
     private static final Logger logger = LoggerFactory.getLogger(CohortController.class);
     
     private final CohortService cohortService;
+    private final CustomerRepository customerRepository;
     
     @Autowired
-    public CohortController(CohortService cohortService) {
+    public CohortController(CohortService cohortService, CustomerRepository customerRepository) {
         this.cohortService = cohortService;
+        this.customerRepository = customerRepository;
     }
     
     /**
@@ -104,5 +109,118 @@ public class CohortController {
         }
         
         return ResponseEntity.ok(customerIds);
+    }
+    
+    /**
+     * Manually triggers the classification of a customer.
+     * This is useful when a customer is added directly to the Customers table
+     * without going through the application.
+     *
+     * @param customerId The ID of the customer to classify
+     * @param dailySpend The daily spend of the customer
+     * @param userType The user type of the customer
+     * @return The set of cohort types the customer was classified into
+     */
+    @PostMapping("/classify")
+    public ResponseEntity<Set<CohortType>> classifyCustomer(
+            @RequestParam("customerId") String customerId,
+            @RequestParam("dailySpend") Double dailySpend,
+            @RequestParam("userType") UserType userType) {
+        logger.info("Manually classifying customer: {}", customerId);
+        
+        if (customerId == null || customerId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Customer ID cannot be null or empty");
+        }
+        
+        if (dailySpend == null) {
+            throw new IllegalArgumentException("Daily spend cannot be null");
+        }
+        
+        if (userType == null) {
+            throw new IllegalArgumentException("User type cannot be null");
+        }
+        
+        // Create a customer object
+        Customer customer = new Customer(customerId, dailySpend, userType);
+        
+        // Classify the customer
+        Set<CohortType> cohortTypes = cohortService.classifyCustomer(customer);
+        
+        logger.info("Customer {} classified into cohort types: {}", customerId, cohortTypes);
+        
+        return ResponseEntity.ok(cohortTypes);
+    }
+    
+    /**
+     * Manually triggers the classification of a customer by ID.
+     * This endpoint retrieves the customer from the database and then classifies it.
+     *
+     * @param customerId The ID of the customer to classify
+     * @return The set of cohort types the customer was classified into
+     */
+    @PostMapping("/classify/{customerId}")
+    public ResponseEntity<?> classifyCustomerById(@PathVariable("customerId") String customerId) {
+        logger.info("Manually classifying customer by ID: {}", customerId);
+        
+        if (customerId == null || customerId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Customer ID cannot be null or empty");
+        }
+        
+        try {
+            // Retrieve the customer from DynamoDB
+            logger.info("Retrieving customer from DynamoDB: {}", customerId);
+            
+            // Use the AWS CLI to get the customer
+            ProcessBuilder processBuilder = new ProcessBuilder(
+                    "aws", "dynamodb", "get-item",
+                    "--table-name", "Customers",
+                    "--key", "{\"customerId\":{\"S\":\"" + customerId + "\"}}",
+                    "--endpoint-url", "http://localhost:4566"
+            );
+            
+            Process process = processBuilder.start();
+            java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(process.getInputStream()));
+            
+            StringBuilder output = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                output.append(line).append("\n");
+            }
+            
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                logger.error("Error retrieving customer from DynamoDB: {}", exitCode);
+                return ResponseEntity.badRequest().body("Error retrieving customer from DynamoDB");
+            }
+            
+            String result = output.toString();
+            logger.info("DynamoDB response: {}", result);
+            
+            // Parse the JSON response
+            org.json.JSONObject json = new org.json.JSONObject(result);
+            if (!json.has("Item")) {
+                logger.error("Customer not found: {}", customerId);
+                return ResponseEntity.notFound().build();
+            }
+            
+            org.json.JSONObject item = json.getJSONObject("Item");
+            String id = item.getJSONObject("customerId").getString("S");
+            double dailySpend = Double.parseDouble(item.getJSONObject("dailySpend").getString("N"));
+            UserType userType = UserType.valueOf(item.getJSONObject("userType").getString("S"));
+            
+            // Create a customer object
+            Customer customer = new Customer(id, dailySpend, userType);
+            
+            // Classify the customer
+            Set<CohortType> cohortTypes = cohortService.classifyCustomer(customer);
+            
+            logger.info("Customer {} classified into cohort types: {}", customerId, cohortTypes);
+            
+            return ResponseEntity.ok(cohortTypes);
+        } catch (Exception e) {
+            logger.error("Error classifying customer: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body("Error classifying customer: " + e.getMessage());
+        }
     }
 }

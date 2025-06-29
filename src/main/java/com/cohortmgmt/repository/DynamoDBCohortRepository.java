@@ -2,6 +2,8 @@ package com.cohortmgmt.repository;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.document.*;
+import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
+import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.cohortmgmt.model.CohortType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +28,7 @@ public class DynamoDBCohortRepository implements CohortRepository {
     private static final String CUSTOMER_ID_ATTR = "customerId";
     private static final String UUID_ATTR = "uuid";
     private static final String COHORT_TYPE_ATTR = "cohortType";
+    private static final String COHORT_TYPE_INDEX = "CohortTypeIndex";
     
     private final AmazonDynamoDB amazonDynamoDB;
     private final DynamoDB dynamoDB;
@@ -62,6 +65,9 @@ public class DynamoDBCohortRepository implements CohortRepository {
                     .withPrimaryKey(CUSTOMER_ID_ATTR, customerId, UUID_ATTR, uuid)
                     .withString(COHORT_TYPE_ATTR, cohortType.name());
             
+            // Explicitly log the item to see what's being saved
+            logger.info("Saving item to Cohorts table: {}", item.toJSON());
+            
             table.putItem(item);
             
             logger.info("Added customer {} to cohort type {}", customerId, cohortType);
@@ -79,15 +85,15 @@ public class DynamoDBCohortRepository implements CohortRepository {
         }
         
         try {
-            // Scan for items with this cohort type
+            // Query the GSI for items with this cohort type
             Table table = dynamoDB.getTable(tableName);
-            Map<String, Object> expressionAttributeValues = new HashMap<>();
-            expressionAttributeValues.put(":cohortType", cohortType.name());
+            Index index = table.getIndex(COHORT_TYPE_INDEX);
             
-            ItemCollection<ScanOutcome> items = table.scan(
-                    COHORT_TYPE_ATTR + " = :cohortType", 
-                    null, 
-                    expressionAttributeValues);
+            QuerySpec querySpec = new QuerySpec()
+                    .withKeyConditionExpression(COHORT_TYPE_ATTR + " = :cohortType")
+                    .withValueMap(new ValueMap().withString(":cohortType", cohortType.name()));
+            
+            ItemCollection<QueryOutcome> items = index.query(querySpec);
             
             // Collect all customer IDs
             Set<String> customerIds = new HashSet<>();
@@ -96,6 +102,7 @@ public class DynamoDBCohortRepository implements CohortRepository {
                 customerIds.add(customerId);
             });
             
+            logger.info("Found {} customers for cohort type {}", customerIds.size(), cohortType);
             return customerIds;
         } catch (Exception e) {
             logger.error("Error getting customer IDs for cohort type {}: {}", cohortType, e.getMessage(), e);
@@ -114,13 +121,11 @@ public class DynamoDBCohortRepository implements CohortRepository {
             Table table = dynamoDB.getTable(tableName);
             
             // Query for items with this customer ID
-            Map<String, Object> expressionAttributeValues = new HashMap<>();
-            expressionAttributeValues.put(":customerId", customerId);
+            QuerySpec querySpec = new QuerySpec()
+                    .withKeyConditionExpression(CUSTOMER_ID_ATTR + " = :customerId")
+                    .withValueMap(new ValueMap().withString(":customerId", customerId));
             
-            ItemCollection<ScanOutcome> items = table.scan(
-                    CUSTOMER_ID_ATTR + " = :customerId", 
-                    null, 
-                    expressionAttributeValues);
+            ItemCollection<QueryOutcome> items = table.query(querySpec);
             
             // Collect all cohort types for this customer
             Set<String> cohortTypeNames = new HashSet<>();
@@ -139,6 +144,7 @@ public class DynamoDBCohortRepository implements CohortRepository {
                 }
             }
             
+            logger.info("Found {} cohort types for customer {}", cohortTypes.size(), customerId);
             return cohortTypes;
         } catch (Exception e) {
             logger.error("Error finding cohort types for customer {}: {}", customerId, e.getMessage(), e);
@@ -155,18 +161,20 @@ public class DynamoDBCohortRepository implements CohortRepository {
         try {
             Table table = dynamoDB.getTable(tableName);
             
-            // Query for items with this customer ID and cohort type
-            Map<String, Object> expressionAttributeValues = new HashMap<>();
-            expressionAttributeValues.put(":customerId", customerId);
-            expressionAttributeValues.put(":cohortType", cohortType.name());
+            // Query for items with this customer ID
+            QuerySpec querySpec = new QuerySpec()
+                    .withKeyConditionExpression(CUSTOMER_ID_ATTR + " = :customerId")
+                    .withFilterExpression(COHORT_TYPE_ATTR + " = :cohortType")
+                    .withValueMap(new ValueMap()
+                            .withString(":customerId", customerId)
+                            .withString(":cohortType", cohortType.name()));
             
-            ItemCollection<ScanOutcome> items = table.scan(
-                    CUSTOMER_ID_ATTR + " = :customerId AND " + COHORT_TYPE_ATTR + " = :cohortType", 
-                    null, 
-                    expressionAttributeValues);
+            ItemCollection<QueryOutcome> items = table.query(querySpec);
             
             // If there's at least one item, the customer is in the cohort type
-            return items.iterator().hasNext();
+            boolean result = items.iterator().hasNext();
+            logger.debug("Customer {} is {} cohort type {}", customerId, result ? "in" : "not in", cohortType);
+            return result;
         } catch (Exception e) {
             logger.error("Error checking if customer {} is in cohort type {}: {}", customerId, cohortType, e.getMessage(), e);
             return false;

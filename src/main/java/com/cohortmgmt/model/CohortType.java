@@ -17,5 +17,10 @@ public enum CohortType {
     /**
      * Represents normal customers.
      */
-    NORMAL
+    NORMAL,
+    
+    /**
+     * Represents VIP customers.
+     */
+    VIP
 }

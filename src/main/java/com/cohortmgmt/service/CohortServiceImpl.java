@@ -78,11 +78,25 @@ public class CohortServiceImpl implements CohortService, ApplicationListener<Con
         
         for (CohortRule rule : rules) {
             try {
-                if (rule.evaluate(customer)) {
+                logger.info("Evaluating rule {} for customer {}", rule.getName(), customer.getCustomerId());
+                boolean result = rule.evaluate(customer);
+                logger.info("Rule {} evaluation result for customer {}: {}", rule.getName(), customer.getCustomerId(), result);
+                
+                if (result) {
                     CohortType cohortType = rule.getCohortType();
-                    cohortRepository.addCustomerToCohortType(cohortType, customer.getCustomerId());
-                    cohortTypes.add(cohortType);
-                    logger.info("Customer {} classified into cohort type {}", customer.getCustomerId(), cohortType);
+                    logger.info("Adding customer {} to cohort type {} using rule {}", 
+                            customer.getCustomerId(), cohortType, rule.getName());
+                    
+                    boolean added = cohortRepository.addCustomerToCohortType(cohortType, customer.getCustomerId());
+                    
+                    if (added) {
+                        cohortTypes.add(cohortType);
+                        logger.info("Customer {} classified into cohort type {} using rule {}", 
+                                customer.getCustomerId(), cohortType, rule.getName());
+                    } else {
+                        logger.warn("Failed to add customer {} to cohort type {} using rule {}", 
+                                customer.getCustomerId(), cohortType, rule.getName());
+                    }
                 }
             } catch (Exception e) {
                 logger.error("Error evaluating rule {} for customer {}: {}", 

@@ -3,5 +3,6 @@ com/cohortmgmt/controller/CohortControllerTest.class
 com/cohortmgmt/config/TestConfig$MockCustomerRepository.class
 com/cohortmgmt/service/CohortServiceImplTest.class
 com/cohortmgmt/config/TestConfig$MockCohortRepository.class
+com/cohortmgmt/service/rule/MidSpendRuleTest.class
 com/cohortmgmt/integration/CohortControllerIntegrationTest.class
 com/cohortmgmt/service/rule/DailySpendRuleTest.class

@@ -99,6 +99,7 @@ public class AwsConfig {
                 createSqsQueue(amazonSQS);
             } catch (Exception e) {
                 logger.error("Error initializing AWS resources: {}", e.getMessage(), e);
+                // Log error but don't throw exception to allow application to start
             }
         };
     }
@@ -117,20 +118,39 @@ public class AwsConfig {
             // Create table if it doesn't exist
             logger.info("Creating customer table: {}", customerTableName);
             
-            CreateTableRequest request = new CreateTableRequest()
-                    .withTableName(customerTableName)
-                    .withKeySchema(new KeySchemaElement("customerId", KeyType.HASH))
-                    .withAttributeDefinitions(new AttributeDefinition("customerId", ScalarAttributeType.S))
-                    .withProvisionedThroughput(new ProvisionedThroughput(5L, 5L))
-                    .withStreamSpecification(new StreamSpecification()
-                            .withStreamEnabled(true)
-                            .withStreamViewType(StreamViewType.NEW_AND_OLD_IMAGES));
-            
-            client.createTable(request);
-            logger.info("Customer table created: {}", customerTableName);
-            
-            // Wait for table to become active
-            waitForTableActive(client, customerTableName);
+            try {
+                CreateTableRequest request = new CreateTableRequest()
+                        .withTableName(customerTableName)
+                        .withKeySchema(new KeySchemaElement("customerId", KeyType.HASH))
+                        .withAttributeDefinitions(new AttributeDefinition("customerId", ScalarAttributeType.S))
+                        .withProvisionedThroughput(new ProvisionedThroughput(5L, 5L))
+                        .withStreamSpecification(new StreamSpecification()
+                                .withStreamEnabled(true)
+                                .withStreamViewType(StreamViewType.NEW_AND_OLD_IMAGES));
+                
+                logger.info("Sending create table request for {}: {}", customerTableName, request);
+                try {
+                    client.createTable(request);
+                    logger.info("Customer table created: {}", customerTableName);
+                    
+                    // Wait for table to become active
+                    waitForTableActive(client, customerTableName);
+                } catch (ResourceInUseException riue) {
+                    // Table already exists (race condition), just log and continue
+                    logger.info("Customer table already exists (race condition): {}", customerTableName);
+                }
+            } catch (Exception ex) {
+                if (ex instanceof ResourceInUseException) {
+                    // Table already exists (race condition), just log and continue
+                    logger.info("Customer table already exists (race condition): {}", customerTableName);
+                } else {
+                    logger.error("Failed to create customer table: {}", ex.getMessage(), ex);
+                    // Log error but don't throw exception to allow application to start
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error checking if customer table exists: {}", e.getMessage(), e);
+            // Log error but don't throw exception to allow application to start
         }
     }
     
@@ -148,39 +168,58 @@ public class AwsConfig {
             // Create table if it doesn't exist
             logger.info("Creating cohort table: {}", cohortTableName);
             
-            // Define attribute definitions
-            List<AttributeDefinition> attributeDefinitions = Arrays.asList(
-                new AttributeDefinition("customerId", ScalarAttributeType.S),
-                new AttributeDefinition("uuid", ScalarAttributeType.S),
-                new AttributeDefinition("cohortType", ScalarAttributeType.S)
-            );
-            
-            // Define key schema (primary key = customerId + uuid)
-            List<KeySchemaElement> keySchema = Arrays.asList(
-                new KeySchemaElement("customerId", KeyType.HASH),  // Partition key
-                new KeySchemaElement("uuid", KeyType.RANGE)        // Sort key
-            );
-            
-            // Define GSI for cohortType
-            GlobalSecondaryIndex cohortTypeIndex = new GlobalSecondaryIndex()
-                .withIndexName("CohortTypeIndex")
-                .withProvisionedThroughput(new ProvisionedThroughput(5L, 5L))
-                .withKeySchema(new KeySchemaElement("cohortType", KeyType.HASH))
-                .withProjection(new Projection().withProjectionType(ProjectionType.ALL));
-            
-            // Create table request
-            CreateTableRequest request = new CreateTableRequest()
-                .withTableName(cohortTableName)
-                .withKeySchema(keySchema)
-                .withAttributeDefinitions(attributeDefinitions)
-                .withGlobalSecondaryIndexes(cohortTypeIndex)
-                .withProvisionedThroughput(new ProvisionedThroughput(5L, 5L));
-            
-            client.createTable(request);
-            logger.info("Cohort table created: {}", cohortTableName);
-            
-            // Wait for table to become active
-            waitForTableActive(client, cohortTableName);
+            try {
+                // Define attribute definitions - only include attributes used in key schemas
+                List<AttributeDefinition> attributeDefinitions = Arrays.asList(
+                    new AttributeDefinition("customerId", ScalarAttributeType.S),
+                    new AttributeDefinition("uuid", ScalarAttributeType.S),
+                    new AttributeDefinition("cohortType", ScalarAttributeType.S)
+                );
+                
+                // Define key schema (primary key = customerId + uuid)
+                List<KeySchemaElement> keySchema = Arrays.asList(
+                    new KeySchemaElement("customerId", KeyType.HASH),  // Partition key
+                    new KeySchemaElement("uuid", KeyType.RANGE)        // Sort key
+                );
+                
+                // Define GSI for cohortType
+                GlobalSecondaryIndex cohortTypeIndex = new GlobalSecondaryIndex()
+                    .withIndexName("CohortTypeIndex")
+                    .withProvisionedThroughput(new ProvisionedThroughput(5L, 5L))
+                    .withKeySchema(new KeySchemaElement("cohortType", KeyType.HASH))
+                    .withProjection(new Projection().withProjectionType(ProjectionType.ALL));
+                
+                // Create table request
+                CreateTableRequest request = new CreateTableRequest()
+                    .withTableName(cohortTableName)
+                    .withKeySchema(keySchema)
+                    .withAttributeDefinitions(attributeDefinitions)
+                    .withGlobalSecondaryIndexes(cohortTypeIndex)
+                    .withProvisionedThroughput(new ProvisionedThroughput(5L, 5L));
+                
+                logger.info("Sending create table request for {}: {}", cohortTableName, request);
+                try {
+                    client.createTable(request);
+                    logger.info("Cohort table created: {}", cohortTableName);
+                    
+                    // Wait for table to become active
+                    waitForTableActive(client, cohortTableName);
+                } catch (ResourceInUseException riue) {
+                    // Table already exists (race condition), just log and continue
+                    logger.info("Cohort table already exists (race condition): {}", cohortTableName);
+                }
+            } catch (Exception ex) {
+                if (ex instanceof ResourceInUseException) {
+                    // Table already exists (race condition), just log and continue
+                    logger.info("Cohort table already exists (race condition): {}", cohortTableName);
+                } else {
+                    logger.error("Failed to create cohort table: {}", ex.getMessage(), ex);
+                    // Log error but don't throw exception to allow application to start
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error checking if cohort table exists: {}", e.getMessage(), e);
+            // Log error but don't throw exception to allow application to start
         }
     }
     
@@ -191,7 +230,18 @@ public class AwsConfig {
      */
     private void createSqsQueue(AmazonSQS client) {
         try {
+            // First check if the queue already exists
+            try {
+                String queueUrl = client.getQueueUrl(queueName).getQueueUrl();
+                logger.info("SQS queue already exists: {} with URL: {}", queueName, queueUrl);
+                return;
+            } catch (Exception e) {
+                // Queue doesn't exist, continue to creation
+                logger.debug("Queue doesn't exist, will create: {}", queueName);
+            }
+            
             // Create the queue and get its URL
+            logger.info("Creating SQS queue: {}", queueName);
             String queueUrl = client.createQueue(queueName).getQueueUrl();
             logger.info("SQS queue created: {} with URL: {}", queueName, queueUrl);
             
@@ -202,7 +252,8 @@ public class AwsConfig {
                 Thread.currentThread().interrupt();
             }
         } catch (Exception e) {
-            logger.warn("Error creating SQS queue {}: {}", queueName, e.getMessage());
+            logger.error("Error creating SQS queue {}: {}", queueName, e.getMessage(), e);
+            // Log error but don't throw exception to allow application to start
         }
     }
     
@@ -237,6 +288,7 @@ public class AwsConfig {
             }
         }
         
-        logger.warn("Timeout waiting for table {} to become active", tableName);
+        // Log error but don't throw exception to allow application to start
+        logger.error("Timeout waiting for table {} to become active", tableName);
     }
 }

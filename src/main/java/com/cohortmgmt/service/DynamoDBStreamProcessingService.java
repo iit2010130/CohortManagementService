@@ -54,6 +54,8 @@ public class DynamoDBStreamProcessingService {
      */
     public void processRecord(Record record) {
         try {
+            logger.debug("Processing DynamoDB stream record: {}", record);
+            
             StreamRecord streamRecord = record.getDynamodb();
             
             if (streamRecord == null) {
@@ -61,10 +63,15 @@ public class DynamoDBStreamProcessingService {
                 return;
             }
             
+            logger.debug("Stream record: {}", streamRecord);
+            logger.debug("Event type: {}", record.getEventName());
+            logger.debug("New image: {}", streamRecord.getNewImage());
+            
             // Process the record based on the event type
             switch (record.getEventName()) {
                 case "INSERT":
                 case "MODIFY":
+                    logger.debug("Processing INSERT or MODIFY event");
                     processInsertOrModify(streamRecord.getNewImage());
                     break;
                 default:
@@ -87,15 +94,36 @@ public class DynamoDBStreamProcessingService {
         }
         
         try {
+            logger.debug("Processing new image: {}", newImage);
+            
             // Extract customer data from the record
+            if (!newImage.containsKey("customerId")) {
+                logger.warn("New image does not contain customerId");
+                return;
+            }
             String customerId = newImage.get("customerId").getS();
+            logger.debug("Extracted customerId: {}", customerId);
+            
+            if (!newImage.containsKey("dailySpend")) {
+                logger.warn("New image does not contain dailySpend");
+                return;
+            }
             Double dailySpend = Double.parseDouble(newImage.get("dailySpend").getN());
+            logger.debug("Extracted dailySpend: {}", dailySpend);
+            
+            if (!newImage.containsKey("userType")) {
+                logger.warn("New image does not contain userType");
+                return;
+            }
             UserType userType = UserType.valueOf(newImage.get("userType").getS());
+            logger.debug("Extracted userType: {}", userType);
             
             // Create a customer object
             Customer customer = new Customer(customerId, dailySpend, userType);
+            logger.debug("Created customer object: {}", customer);
             
             // Classify the customer into cohort types
+            logger.debug("Classifying customer: {}", customer);
             Set<CohortType> cohortTypes = cohortService.classifyCustomer(customer);
             
             logger.info("Classified customer {} into cohort types: {}", customerId, cohortTypes);
