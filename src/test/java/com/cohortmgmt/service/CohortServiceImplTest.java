@@ -56,6 +56,7 @@ public class CohortServiceImplTest {
         when(cohortRepository.findCohortTypesByCustomerId(normalCustomer.getCustomerId())).thenReturn(Collections.emptyList());
         when(cohortRepository.getCustomerIdsByCohortType(CohortType.PREMIUM)).thenReturn(Collections.singleton(premiumCustomer.getCustomerId()));
         when(cohortRepository.getCustomerIdsByCohortType(CohortType.FRAUD)).thenReturn(Collections.emptySet());
+        when(cohortRepository.addCustomerToCohortType(any(CohortType.class), anyString())).thenReturn(true);
     }
     
     @Test
