@@ -1,0 +1,19 @@
+-------------------------------------------------------------------------------
+Test set: com.cohortmgmt.service.CohortServiceImplTest
+-------------------------------------------------------------------------------
+Tests run: 15, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.03 s <<< FAILURE! - in com.cohortmgmt.service.CohortServiceImplTest
+testAddRule  Time elapsed: 0.004 s  <<< FAILURE!
+org.mockito.exceptions.verification.TooManyActualInvocations: 
+
+cohortRepository.save(
+    <any com.cohortmgmt.model.Cohort>
+);
+Wanted 1 time:
+-> at com.cohortmgmt.service.CohortServiceImplTest.testAddRule(CohortServiceImplTest.java:237)
+But was 2 times:
+-> at com.cohortmgmt.service.CohortServiceImpl.initializeCohorts(CohortServiceImpl.java:51)
+-> at com.cohortmgmt.service.CohortServiceImpl.addRule(CohortServiceImpl.java:67)
+
+
+	at com.cohortmgmt.service.CohortServiceImplTest.testAddRule(CohortServiceImplTest.java:237)
+

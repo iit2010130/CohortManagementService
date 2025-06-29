@@ -31,18 +31,21 @@ public class CustomerDataProcessingService {
     private final CohortService cohortService;
     private final ObjectMapper objectMapper;
     private final String queueName;
+    private final String endpoint;
     
     @Autowired
     public CustomerDataProcessingService(
             AmazonSQS amazonSQS,
             CustomerRepository customerRepository,
             CohortService cohortService,
-            @Value("${aws.sqs.queue-name}") String queueName) {
+            @Value("${aws.sqs.queue-name}") String queueName,
+            @Value("${aws.endpoint}") String endpoint) {
         this.amazonSQS = amazonSQS;
         this.customerRepository = customerRepository;
         this.cohortService = cohortService;
         this.objectMapper = new ObjectMapper();
         this.queueName = queueName;
+        this.endpoint = endpoint;
     }
     
     /**
@@ -52,7 +55,17 @@ public class CustomerDataProcessingService {
     @Scheduled(fixedDelay = 10000)
     public void processCustomerData() {
         try {
-            String queueUrl = amazonSQS.getQueueUrl(queueName).getQueueUrl();
+            // For LocalStack, we need to construct the queue URL directly
+            String queueUrl = endpoint + "/000000000000/" + queueName;
+            
+            try {
+                // Try to get the queue URL from the service first
+                queueUrl = amazonSQS.getQueueUrl(queueName).getQueueUrl();
+                logger.debug("Using queue URL from SQS service: {}", queueUrl);
+            } catch (Exception e) {
+                // If that fails, use the constructed URL
+                logger.debug("Using constructed queue URL: {}", queueUrl);
+            }
             
             ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest()
                     .withQueueUrl(queueUrl)

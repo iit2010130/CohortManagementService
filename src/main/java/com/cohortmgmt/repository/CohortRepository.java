@@ -1,7 +1,6 @@
 package com.cohortmgmt.repository;
 
 import com.cohortmgmt.model.Cohort;
-import com.cohortmgmt.model.CohortType;
 
 import java.util.List;
 import java.util.Optional;
@@ -9,11 +8,15 @@ import java.util.Set;
 
 /**
  * Repository interface for storing and retrieving cohort data.
+ * Minimized to support only the required operations:
+ * 1. Determine if a given CustomerId is part of a specific cohort
+ * 2. List all cohorts associated with a given CustomerId
+ * 3. Retrieve all CustomerIds for a specific cohort
  */
 public interface CohortRepository {
     
     /**
-     * Saves a cohort to the repository.
+     * Saves a cohort to the repository (needed for initialization).
      *
      * @param cohort The cohort to save
      * @return The saved cohort
@@ -21,7 +24,7 @@ public interface CohortRepository {
     Cohort save(Cohort cohort);
     
     /**
-     * Finds a cohort by ID.
+     * Finds a cohort by ID (needed for operations).
      *
      * @param cohortId The ID of the cohort to find
      * @return An Optional containing the cohort if found, or empty if not found
@@ -29,22 +32,7 @@ public interface CohortRepository {
     Optional<Cohort> findById(String cohortId);
     
     /**
-     * Finds all cohorts in the repository.
-     *
-     * @return The list of all cohorts
-     */
-    List<Cohort> findAll();
-    
-    /**
-     * Finds all cohorts of a specific type.
-     *
-     * @param cohortType The type of cohort to find
-     * @return The list of cohorts of the specified type
-     */
-    List<Cohort> findByType(CohortType cohortType);
-    
-    /**
-     * Adds a customer to a cohort.
+     * Adds a customer to a cohort (needed for classification).
      *
      * @param cohortId The ID of the cohort
      * @param customerId The ID of the customer to add
@@ -53,16 +41,7 @@ public interface CohortRepository {
     boolean addCustomerToCohort(String cohortId, String customerId);
     
     /**
-     * Removes a customer from a cohort.
-     *
-     * @param cohortId The ID of the cohort
-     * @param customerId The ID of the customer to remove
-     * @return true if the customer was removed, false otherwise
-     */
-    boolean removeCustomerFromCohort(String cohortId, String customerId);
-    
-    /**
-     * Gets all customer IDs in a cohort.
+     * Gets all customer IDs in a cohort (for query #3).
      *
      * @param cohortId The ID of the cohort
      * @return The set of customer IDs in the cohort
@@ -70,7 +49,7 @@ public interface CohortRepository {
     Set<String> getCustomerIds(String cohortId);
     
     /**
-     * Gets all cohorts that contain a specific customer.
+     * Gets all cohorts that contain a specific customer (for query #2).
      *
      * @param customerId The ID of the customer
      * @return The list of cohorts containing the customer
@@ -78,14 +57,7 @@ public interface CohortRepository {
     List<Cohort> findByCustomerId(String customerId);
     
     /**
-     * Deletes a cohort from the repository.
-     *
-     * @param cohortId The ID of the cohort to delete
-     */
-    void deleteById(String cohortId);
-    
-    /**
-     * Checks if a cohort exists in the repository.
+     * Checks if a cohort exists in the repository (needed for initialization).
      *
      * @param cohortId The ID of the cohort to check
      * @return true if the cohort exists, false otherwise

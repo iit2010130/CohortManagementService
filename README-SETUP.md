@@ -13,7 +13,7 @@ This guide provides instructions on how to set up and run the Cohort Management 
 ### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/iit2010130/CohortManagementService
 cd CohortManagementService
 ```
 
@@ -44,35 +44,116 @@ The service will start on port 8080 by default.
 
 ## Testing the Service
 
-### 1. Send a Message to SQS
+### 1. Create DynamoDB Tables
 
-You can use the AWS CLI with the `--endpoint-url` parameter to interact with LocalStack:
+First, verify that the tables have been created properly:
 
 ```bash
-aws --endpoint-url=http://localhost:4566 sqs send-message \
-  --queue-url http://localhost:4566/000000000000/customer-data-queue \
-  --message-body '{"customerId":"123","dailySpend":6000,"userType":"PAID"}'
+# List all DynamoDB tables
+aws dynamodb list-tables --endpoint-url http://localhost:4566
+
+# Describe the Customers table
+aws dynamodb describe-table --table-name Customers --endpoint-url http://localhost:4566
+
+# Describe the Cohorts table
+aws dynamodb describe-table --table-name Cohorts --endpoint-url http://localhost:4566
 ```
 
-### 2. Check the Cohort Classification
+### 2. Add Test Data
 
-You can use the REST API to check if a customer is in a specific cohort type:
+You can add test data directly to DynamoDB:
 
 ```bash
-curl -X GET "http://localhost:8080/api/cohorts/check?customerId=123&cohortType=PREMIUM"
+# Create a test customer
+aws dynamodb put-item \
+  --table-name Customers \
+  --item '{
+    "customerId": {"S": "customer123"},
+    "dailySpend": {"N": "6000.0"},
+    "userType": {"S": "PAID"}
+  }' \
+  --endpoint-url http://localhost:4566
 ```
 
-Or to get all cohorts for a customer:
+### 3. Send a Message to SQS
+
+You can use the AWS CLI to send a message to the SQS queue:
 
 ```bash
-curl -X GET "http://localhost:8080/api/cohorts/customer/123"
+# Get the queue URL
+QUEUE_URL=$(aws sqs get-queue-url --queue-name customer-data-queue --endpoint-url http://localhost:4566 --query 'QueueUrl' --output text)
+
+# Send a message to the queue
+aws sqs send-message \
+  --queue-url $QUEUE_URL \
+  --message-body '{"customerId":"customer123","dailySpend":6000.0,"userType":"PAID"}' \
+  --endpoint-url http://localhost:4566
+
+# Wait for processing
+sleep 5
 ```
 
-Or to get all customers in a cohort type:
+### 4. Test the Three Main Queries
+
+#### Query 1: Determine if a Customer is in a Cohort
 
 ```bash
+# Using the REST API
+curl -X GET "http://localhost:8080/api/cohorts/check?customerId=customer123&cohortType=PREMIUM"
+
+# Expected response: true (since dailySpend > 5000)
+# Note: You might see a '%' at the end of the output - this is just your terminal prompt
+# If you want to avoid this, use: curl -X GET "http://localhost:8080/api/cohorts/check?customerId=customer123&cohortType=PREMIUM" -w '\n'
+```
+
+#### Query 2: List All Cohorts for a Customer
+
+```bash
+# Using the REST API
+curl -X GET "http://localhost:8080/api/cohorts/customer/customer123"
+
+# Expected response: A list containing the PREMIUM cohort
+```
+
+#### Query 3: Get All Customers in a Cohort Type
+
+```bash
+# Using the REST API
 curl -X GET "http://localhost:8080/api/cohorts/type/PREMIUM/customers"
+
+# Expected response: A set containing "customer123"
 ```
+
+### 5. Verify Data in DynamoDB
+
+```bash
+# Check the Cohorts table
+aws dynamodb scan --table-name Cohorts --endpoint-url http://localhost:4566
+
+# Check the Customers table
+aws dynamodb scan --table-name Customers --endpoint-url http://localhost:4566
+```
+
+### 6. Restart Testing (Optional)
+
+If you want to delete the tables and restart the test:
+
+```bash
+# Delete the tables
+aws dynamodb delete-table --table-name Customers --endpoint-url http://localhost:4566
+aws dynamodb delete-table --table-name Cohorts --endpoint-url http://localhost:4566
+
+# Delete the queue (optional)
+QUEUE_URL=$(aws sqs get-queue-url --queue-name customer-data-queue --endpoint-url http://localhost:4566 --query 'QueueUrl' --output text)
+aws sqs delete-queue --queue-url $QUEUE_URL --endpoint-url http://localhost:4566
+
+# Restart the application to recreate the tables and queue
+# First stop the current application (Ctrl+C in the terminal where it's running)
+# Then restart it:
+mvn spring-boot:run
+```
+
+After restarting the application, you can repeat steps 1-5 to test again with fresh tables.
 
 ## Architecture
 
